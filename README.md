@@ -16,9 +16,19 @@ Institutions: <sup>1</sup>Huazhong University of Science and Technology | <sup>2
 - ⬜️ Using some strategies to reduce the inference time per image from 955.3ms to **249.8ms**.
 - ⬜️ Compatibility with more industrial datasets.
 - ⬜️ Compatibility with more visual backbones, e.g. [Vision Mamba](https://github.com/hustvl/Vim).
+- ✅ **DINOv3 integration** with enhanced features for better anomaly detection
 
 
 ## 📣Updates:
+
+***[New] DINOv3 Integration*** 
+🚀 **Major Update**: DINOv3 backbone integration with enhanced features for improved anomaly detection:
+- Enhanced multi-head attention with temperature scaling  
+- Multi-scale patch embedding for better feature extraction
+- Register tokens for improved attention mechanisms
+- Learnable positional embeddings for better generalization
+- See [DINOv3 Documentation](./README_DINOv3.md) for details
+
 ***04/11/2024***
 1. The comparisons with the zero/few-shot methods in CVPR 2024 have been added to <a href='#compare_sota'>Compare with SOTA k-shot Methods.</a>
 2. Fixed some bugs in `models/backbone/_backbones.py`.
@@ -222,9 +232,34 @@ data
 
 ## 💎Run MuSc: <a href='#all_catelogue'>[Back to Catalogue]</a>
 
-We provide two ways to run our code.
+We provide multiple ways to run our code, including **NEW DINOv3 support**! 
 
-### python
+### 🚀 DINOv3 (Recommended - Enhanced Features)
+
+**NEW**: DINOv3 backbone with enhanced anomaly detection capabilities:
+
+```bash
+# Quick start with DINOv3
+./scripts/run_dinov3.sh
+
+# Use specific DINOv3 model
+./scripts/run_dinov3.sh -m dinov3_vitb14 -c bottle
+
+# Compare DINOv2 vs DINOv3 performance
+./scripts/run_dinov3.sh -a compare
+
+# Validate DINOv3 installation
+./scripts/run_dinov3.sh -a validate
+```
+
+Or use the Python script directly:
+```bash
+python examples/dinov3_example.py --model dinov3_vitb14 --category bottle
+```
+
+See [DINOv3 Documentation](./README_DINOv3.md) for detailed usage and features.
+
+### python (Original Method)
 
 ```
 python examples/musc_main.py
@@ -244,7 +279,11 @@ The key arguments of the script are as follows:
 - `--data_path`: The directory of datasets.
 - `--dataset_name`: Dataset name.
 - `--class_name`: Category to be tested. If the parameter is set to `ALL`, all the categories are tested.
-- `--backbone_name`: Feature exractor name. Our code is compatible with CLIP, DINO and DINO_v2. For more details, see `configs/musc.yaml`.
+- `--backbone_name`: Feature exractor name. Our code is compatible with CLIP, DINO, DINO_v2, and **NEW DINOv3**. For more details, see `configs/musc.yaml`.
+  - **DINOv3 models**: `dinov3_vits14`, `dinov3_vitb14`, `dinov3_vitl14`, `dinov3_vitg14`
+  - **DINOv2 models**: `dinov2_vitb14`, `dinov2_vitl14`
+  - **DINO models**: `dino_vitbase8`, `dino_vitbase16`
+  - **CLIP models**: `ViT-B-32`, `ViT-B-16`, `ViT-L-14`, `ViT-L-14-336`
 - `--pretrained`: Pretrained CLIP model. `openai`, `laion400m_e31`, and `laion400m_e32` are optional.
 - `--feature_layers`: The layers for extracting features in backbone(ViT).
 - `--img_resize`: The size of the image inputted into the model.
@@ -354,8 +393,10 @@ All the results are implemented by the default settings in our paper.
 ## 🎖️Results of different backbones: <a href='#all_catelogue'>[Back to Catalogue]</a>
 
 The default backbone (feature extractor) in our paper is ViT-large-14-336 of CLIP.
-We also provide the supported codes for other image encoder of CLIP, DINO and DINO_v2.
+We also provide the supported codes for other image encoder of CLIP, DINO, DINO_v2, and **NEW DINOv3**.
 For more details, see `configs/musc.yaml`.
+
+**🚀 DINOv3 Models (Recommended)**: Enhanced with multi-scale features, attention improvements, and better semantic understanding.
 
 ### MVTec AD
 

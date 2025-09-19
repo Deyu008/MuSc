@@ -23,8 +23,16 @@ testing:
 # ViT-L-14 | ViT-L-14-336
 # dino_vitbase8 | dino_vitbase16
 # dinov2_vitb14 | dinov2_vitl14
+# dinov3_vits14 | dinov3_vitb14 | dinov3_vitl14 | dinov3_vitg14
 
 # models['pretrained'] choice:
 # openai (apply to ViT-B-32, ViT-B-16, ViT-L-14 and ViT-L-14-336)
 # laion400m_e31 (apply to ViT-B-32, ViT-B-16, ViT-B-16-plus-240 and ViT-L-14)
 # laion400m_e32 (apply to ViT-B-32, ViT-B-16, ViT-B-16-plus-240 and ViT-L-14)
+
+# DINOv3 features:
+# - Enhanced multi-head attention with temperature scaling
+# - Multi-scale patch embedding for better feature extraction
+# - Register tokens for improved attention
+# - Learnable positional embeddings
+# - Improved semantic understanding for anomaly detection

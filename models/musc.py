@@ -15,6 +15,7 @@ from datasets.btad import _CLASSNAMES as _CLASSNAMES_btad
 import models.backbone.open_clip as open_clip
 import models.backbone._backbones as _backbones
 from models.modules._LNAMD import LNAMD
+from models.modules._DINOv3_LNAMD import create_dinov3_enhanced_lnamd
 from models.modules._MSM import MSM
 from models.modules._RsCIN import RsCIN
 from utils.metrics import compute_metrics
@@ -66,7 +67,7 @@ class MuSc():
 
     def load_backbone(self):
         if 'dino' in self.model_name:
-            # dino or dino_v2
+            # dino, dinov2, or dinov3
             self.dino_model = _backbones.load(self.model_name)
             self.dino_model.to(self.device)
             self.preprocess = None
@@ -160,7 +161,15 @@ class MuSc():
                     gt_list.extend(list(image_info["is_anomaly"].numpy()))
                 with torch.no_grad(), torch.cuda.amp.autocast():
                     input_image = image.to(torch.float).to(self.device)
-                    if 'dinov2' in self.model_name:
+                    if 'dinov3' in self.model_name:
+                        # DINOv3 with enhanced intermediate layer extraction
+                        patch_tokens = self.dino_model.get_intermediate_layers(x=input_image, n=[l-1 for l in self.features_list], return_class_token=False)
+                        image_features = self.dino_model(input_image)
+                        patch_tokens = [patch_tokens[l].cpu() for l in range(len(self.features_list))]
+                        # Create fake cls tokens for compatibility
+                        fake_cls = [torch.zeros_like(p)[:, 0:1, :] for p in patch_tokens]
+                        patch_tokens = [torch.cat([fake_cls[i], patch_tokens[i]], dim=1) for i in range(len(patch_tokens))]
+                    elif 'dinov2' in self.model_name:
                         patch_tokens = self.dino_model.get_intermediate_layers(x=input_image, n=[l-1 for l in self.features_list], return_class_token=False)
                         image_features = self.dino_model(input_image)
                         patch_tokens = [patch_tokens[l].cpu() for l in range(len(self.features_list))]
@@ -186,12 +195,28 @@ class MuSc():
             for r in self.r_list:
                 start_time = time.time()
                 print('aggregation degree: {}'.format(r))
-                LNAMD_r = LNAMD(device=self.device, r=r, feature_dim=feature_dim, feature_layer=self.features_list)
+                
+                # Use enhanced LNAMD for DINOv3 models
+                if 'dinov3' in self.model_name:
+                    LNAMD_r = create_dinov3_enhanced_lnamd(
+                        device=self.device, 
+                        r=r, 
+                        feature_dim=feature_dim, 
+                        feature_layer=self.features_list,
+                        model_name=self.model_name
+                    )
+                else:
+                    LNAMD_r = LNAMD(device=self.device, r=r, feature_dim=feature_dim, feature_layer=self.features_list)
+                
                 Z_layers = {}
                 for im in range(len(patch_tokens_list)):
                     patch_tokens = [p.to(self.device) for p in patch_tokens_list[im]]
                     with torch.no_grad(), torch.cuda.amp.autocast():
-                        features = LNAMD_r._embed(patch_tokens)
+                        # Use enhanced embedding for DINOv3
+                        if 'dinov3' in self.model_name:
+                            features = LNAMD_r._enhanced_embed(patch_tokens)
+                        else:
+                            features = LNAMD_r._embed(patch_tokens)
                         features /= features.norm(dim=-1, keepdim=True)
                         for l in range(len(self.features_list)):
                             # save the aggregated features

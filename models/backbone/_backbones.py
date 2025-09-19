@@ -2,6 +2,7 @@ import timm  # noqa
 import torchvision.models as models  # noqa
 import models.backbone.vision_transformer as vits
 import models.backbone.dino_vision_transformer as dino_vits
+import models.backbone.dinov3_vision_transformer as dinov3_vits
 import torch
 
 
@@ -76,8 +77,49 @@ def load(name):
     elif name=="dinov2_vitl14":
         url = "dinov2_vitl14/dinov2_vitl14_pretrain.pth"
         patch_size = 14
+    elif name=="dinov3_vits14":
+        url = "dinov3_vits14/dinov3_vits14_pretrain.pth"
+        patch_size = 14
+    elif name=="dinov3_vitb14":
+        url = "dinov3_vitb14/dinov3_vitb14_pretrain.pth"
+        patch_size = 14
+    elif name=="dinov3_vitl14":
+        url = "dinov3_vitl14/dinov3_vitl14_pretrain.pth"
+        patch_size = 14
+    elif name=="dinov3_vitg14":
+        url = "dinov3_vitg14/dinov3_vitg14_pretrain.pth"
+        patch_size = 14
         
-    if 'dinov2' in url:
+    if 'dinov3' in url:
+        device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        # Build DINOv3 model
+        if "vits" in name:
+            model = dinov3_vits.dinov3_vit_small(patch_size=patch_size, num_classes=0)
+        elif "vitb" in name:
+            model = dinov3_vits.dinov3_vit_base(patch_size=patch_size, num_classes=0)
+        elif "vitl" in name:
+            model = dinov3_vits.dinov3_vit_large(patch_size=patch_size, num_classes=0)
+        elif "vitg" in name:
+            model = dinov3_vits.dinov3_vit_giant(patch_size=patch_size, num_classes=0)
+        else:
+            model = dinov3_vits.dinov3_vit_base(patch_size=patch_size, num_classes=0)
+        
+        for p in model.parameters():
+            p.requires_grad = False
+        model.eval()
+        model.to(device)
+        
+        # Try to load pretrained weights if available
+        try:
+            state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dinov3/" + url, map_location=device)
+            model.load_state_dict(state_dict, strict=False)
+            print(f"Loaded DINOv3 pretrained weights for {name}")
+        except Exception as e:
+            print(f"Could not load pretrained weights for {name}: {e}")
+            print("Using model with random initialization. Please provide pretrained weights.")
+        
+        return model
+    elif 'dinov2' in url:
         model = torch.hub.load('facebookresearch/dinov2', name)
         return model
 

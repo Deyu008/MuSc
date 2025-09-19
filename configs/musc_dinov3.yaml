@@ -1,0 +1,57 @@
+datasets:
+  dataset_name: 'mvtec_ad'  # choice ['mvtec_ad', 'visa']
+  data_path: ./data/mvtec_anomaly_detection/
+  class_name: 'ALL'
+  img_resize: 518
+  divide_num: 1
+models:
+  backbone_name: 'dinov3_vitb14'  # Use DINOv3 Base model
+  pretrained: 'dinov3'
+  batch_size: 4
+  feature_layers: [5, 11, 17, 23]  # Optimized for DINOv3
+  r_list: [1, 3, 5]
+device: 0
+testing:
+  output_dir: 'output_dinov3'
+  vis: False
+  vis_type: single_norm # choice ['single_norm', 'whole_norm']
+  save_excel: False
+
+
+# DINOv3 Enhanced Configuration
+# This configuration leverages DINOv3's improved features:
+# 
+# models['backbone_name'] DINOv3 choices:
+# dinov3_vits14 - DINOv3 Small (384 dim, 12 layers, 6 heads)
+# dinov3_vitb14 - DINOv3 Base (768 dim, 12 layers, 12 heads) [RECOMMENDED]
+# dinov3_vitl14 - DINOv3 Large (1024 dim, 24 layers, 16 heads)
+# dinov3_vitg14 - DINOv3 Giant (1536 dim, 40 layers, 24 heads)
+#
+# DINOv3 Features:
+# 1. Enhanced Multi-Head Attention:
+#    - Temperature scaling for better attention distribution
+#    - Improved gradient flow and training stability
+#
+# 2. Multi-Scale Patch Embedding:
+#    - Multiple convolutional scales (3x3, 5x5, 7x7)
+#    - Better feature extraction at different granularities
+#    - Enhanced semantic understanding
+#
+# 3. Register Tokens:
+#    - Additional learnable tokens for improved attention
+#    - Better global context understanding
+#    - Reduced attention artifacts
+#
+# 4. Learnable Positional Embeddings:
+#    - Adaptive to different input sizes
+#    - Better generalization across resolutions
+#
+# 5. Enhanced Feature Extraction:
+#    - Improved intermediate layer outputs
+#    - Better semantic representations for anomaly detection
+#    - More robust to domain shifts
+#
+# Recommended settings for anomaly detection:
+# - feature_layers: [5, 11, 17, 23] for balanced multi-scale features
+# - img_resize: 518 for high-resolution analysis
+# - batch_size: 4 or lower due to increased model complexity
