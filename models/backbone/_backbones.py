@@ -55,6 +55,17 @@ _BACKBONES = {
 
 
 def load(name):
+    """
+    Load backbone models for feature extraction.
+    
+    Supported models:
+    - DINOv2 models: dinov2_vits14, dinov2_vitb14, dinov2_vitl14, dinov2_vitg14
+    - DINOv2 with registers: dinov2_vits14_reg, dinov2_vitb14_reg, dinov2_vitl14_reg, dinov2_vitg14_reg
+    - Original DINO models: dino_deitsmall16, dino_deitsmall8_300ep, dino_vitbase16, dino_vitbase8
+    - Other models defined in _BACKBONES dictionary
+    
+    Note: DINOv3 models require special access to weights following the official repository instructions.
+    """
     url = []
     patch_size = 8
     
