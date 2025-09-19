@@ -55,8 +55,31 @@ _BACKBONES = {
 
 
 def load(name):
+    """
+    Load backbone models for feature extraction.
+    
+    Supported models:
+    - DINOv2 models: dinov2_vits14, dinov2_vitb14, dinov2_vitl14, dinov2_vitg14
+    - DINOv2 with registers: dinov2_vits14_reg, dinov2_vitb14_reg, dinov2_vitl14_reg, dinov2_vitg14_reg
+    - Original DINO models: dino_deitsmall16, dino_deitsmall8_300ep, dino_vitbase16, dino_vitbase8
+    - Other models defined in _BACKBONES dictionary
+    
+    Note: DINOv3 models require special access to weights following the official repository instructions.
+    """
     url = []
     patch_size = 8
+    
+    # Handle DINOv2 models using torch.hub
+    if name in ["dinov2_vits14", "dinov2_vitb14", "dinov2_vitl14", "dinov2_vitg14",
+                "dinov2_vits14_reg", "dinov2_vitb14_reg", "dinov2_vitl14_reg", "dinov2_vitg14_reg"]:
+        model = torch.hub.load('facebookresearch/dinov2', name)
+        return model
+    
+    # Handle DINOv3 models (requires local repository for now)
+    # Note: DINOv3 models require special handling and access to weights
+    # Users should follow the DINOv3 repository instructions for weight access
+    
+    # Handle original DINO models
     if name == "dino_deitsmall16":
         url = "dino_deitsmall16_pretrain/dino_deitsmall16_pretrain.pth"
         patch_size = 16
@@ -67,21 +90,8 @@ def load(name):
         patch_size = 16
     elif name == "dino_vitbase8":
         url = "dino_vitbase8_pretrain/dino_vitbase8_pretrain.pth"
-    elif name=="dinov2_vits14":
-        url = "dinov2_vits14/dinov2_vits14_pretrain.pth"
-        patch_size = 14
-    elif name=="dinov2_vitb14":
-        url = "dinov2_vitb14/dinov2_vitb14_pretrain.pth"
-        patch_size = 14
-    elif name=="dinov2_vitl14":
-        url = "dinov2_vitl14/dinov2_vitl14_pretrain.pth"
-        patch_size = 14
-        
-    if 'dinov2' in url:
-        model = torch.hub.load('facebookresearch/dinov2', name)
-        return model
 
-    elif len(url)>0:
+    if len(url) > 0:
         device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         # build model
         # vit_tiny, vit_small, vit_base, patch_size=8, 16
@@ -94,4 +104,5 @@ def load(name):
         state_dict = torch.hub.load_state_dict_from_url(url="https://dl.fbaipublicfiles.com/dino/" + url)
         model.load_state_dict(state_dict, strict=True)
         return model
+        
     return eval(_BACKBONES[name])
